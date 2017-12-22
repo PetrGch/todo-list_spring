@@ -1,61 +1,64 @@
 package todo_list_demo.db;
 
-
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import todo_list_demo.Models.Users;
 
-@Controller
-@Lazy
-public class Db {
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.util.List;
 
-  private SessionFactory sessionFactory;
-  private Session session;
+@Transactional
+@Repository
+public class Db implements Idb {
 
-  private Users user;
+  @PersistenceContext
+  private EntityManager entityManager;
 
-  public Db(Users u) {
-    this.user = u;
-    sessionFactory = new Configuration()
-        .configure("hibernate.cfg.xml")
-        .addAnnotatedClass(Users.class)
-        .buildSessionFactory();
-
-    session = sessionFactory.getCurrentSession();
+  @SuppressWarnings("unchecked")
+  @Override
+  public List<Users> getAllUsers() {
+    String hql = "FROM Users as usr ORDER BY usr.id";
+    return (List<Users>) entityManager.createQuery(hql).getResultList();
   }
 
-  @Bean
-  public Db initDb() {
-    user = new Users();
-    return new Db(user);
+  @Override
+  public int getUsersBeEmailAndName(String firstName, String email) {
+    String hql = "FROM Users as us WHERE us.firstName = ? and us.email = ?";
+    return entityManager.createQuery(hql)
+        .setParameter(1, firstName)
+        .setParameter(2, email).getFirstResult();
   }
 
-  public void addNewUser(String name, String surname, String email, String password) {
-    System.out.println("hi there new user. Your parameters are: name - " + name
-        + ", surname - " + surname + ", email - " + email + ", password - " + password);
-
-    user.setFirstName(name);
-    user.setLastName(surname);
-    user.setEmail(email);
-    user.setPassword(password);
-
-    try {
-      session.beginTransaction();
-      session.save(user);
-      session.getTransaction().commit();
-    } catch (Exception ex) {
-      ex.printStackTrace();
-    } finally {
-      sessionFactory.close();
-    }
-
-    System.out.println(user);
+  @Override
+  public Users getUserById(int id) {
+    return entityManager.find(Users.class, id);
   }
 
+  @Override
+  public void addUser(Users user) {
+    entityManager.persist(user);
+  }
+
+  @Override
+  public void updateUser(Users user) {
+    Users users = getUserById(user.getId());
+    users.setFirstName(user.getFirstName());
+    users.setLastName(user.getLastName());
+    users.setEmail(user.getEmail());
+    entityManager.flush();
+  }
+
+  @Override
+  public void deleteUser(int userId) {
+    entityManager.remove(userId);
+  }
+
+  @Override
+  public boolean isUserExist(String firstName, String lastName) {
+    String hql = "FROM Users as us WHERE us.firstName = ?";
+    int count = entityManager.createQuery(hql).setParameter(1, firstName)
+        .getResultList().size();
+    return count > 0;
+  }
 }

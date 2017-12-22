@@ -1,16 +1,16 @@
 package todo_list_demo.Models;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Controller;
-
 import javax.persistence.*;
+import java.io.Serializable;
 
-@Controller
 @Entity
-public class Users {
+@Table(name = "users")
+public class Users implements Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.AUTO)
   @Column(name = "id")
   private int id;
 
@@ -25,15 +25,6 @@ public class Users {
 
   @Column(name = "password")
   private String password;
-
-  public Users() {}
-
-  public Users(String firstName, String lastName, String email, String password) {
-    this.firstName = firstName;
-    this.lastName = lastName;
-    this.email = email;
-    this.password = password;
-  }
 
   public int getId() {
     return id;

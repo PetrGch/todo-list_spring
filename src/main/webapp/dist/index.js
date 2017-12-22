@@ -24901,13 +24901,38 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var Registration = function (_Component) {
     _inherits(Registration, _Component);
 
-    function Registration() {
+    function Registration(props) {
         _classCallCheck(this, Registration);
 
-        return _possibleConstructorReturn(this, (Registration.__proto__ || Object.getPrototypeOf(Registration)).apply(this, arguments));
+        var _this = _possibleConstructorReturn(this, (Registration.__proto__ || Object.getPrototypeOf(Registration)).call(this, props));
+
+        _this.submitForm = _this.submitForm.bind(_this);
+        return _this;
     }
 
     _createClass(Registration, [{
+        key: "submitForm",
+        value: function submitForm(e) {
+            e.preventDefault();
+            var _e$target = e.target,
+                name = _e$target.name,
+                surname = _e$target.surname,
+                email = _e$target.email,
+                password = _e$target.password;
+
+
+            var formData = new FormData(e.target);
+
+            fetch("./api/users", {
+                method: "POST",
+                body: formData
+            }).then(function (res) {
+                return location.replace('./#/firstPage/authorization');
+            }).catch(function (ex) {
+                return console.error(ex.message);
+            });
+        }
+    }, {
         key: "render",
         value: function render() {
             return _react2.default.createElement(
@@ -24921,7 +24946,7 @@ var Registration = function (_Component) {
                 _react2.default.createElement("br", null),
                 _react2.default.createElement(
                     "form",
-                    { action: "api/registration", method: "GET" },
+                    { onSubmit: this.submitForm },
                     _react2.default.createElement(
                         "label",
                         { htmlFor: "name" },
@@ -24942,7 +24967,7 @@ var Registration = function (_Component) {
                         "label",
                         { htmlFor: "email" },
                         "Email: ",
-                        _react2.default.createElement("input", { type: "text", id: "email", name: "email" })
+                        _react2.default.createElement("input", { type: "text", id: "email", required: true, name: "email" })
                     ),
                     _react2.default.createElement("br", null),
                     _react2.default.createElement("br", null),
